@@ -1,0 +1,32 @@
+version: "3.7"
+
+# 订阅转换
+services: 
+  subconverter:
+    image: tindy2013/subconverter:latest
+    restart: always
+    env_file: 
+      - .env
+    # ports: 
+    #   - 25500:25500
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      # services
+      - "traefik.http.services.subcon.loadbalancer.server.port=25500"
+      # http
+      - "traefik.http.routers.subcon_http.entrypoints=web"
+      - "traefik.http.routers.subcon_http.rule=Host(`${CON_DOMAIN}`) && PathPrefix(`/sub`)"
+      - "traefik.http.routers.subcon_http.service=subcon"
+      - "traefik.http.routers.subcon_http.middlewares=redirect-to-https@file"
+      # https
+      - "traefik.http.routers.subcon_https.entrypoints=web_secure"
+      - "traefik.http.routers.subcon_https.rule=Host(`${CON_DOMAIN}`) && PathPrefix(`/sub`)"
+      - "traefik.http.routers.subcon_https.service=subcon"
+      - "traefik.http.routers.subcon_https.tls=true"
+      - "traefik.http.routers.subcon_https.tls.options=intermediate@file"
+
+networks: 
+  default:
+    external: true
+    name: frontend
